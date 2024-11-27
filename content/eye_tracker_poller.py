@@ -1,6 +1,8 @@
 import time
-from talon import actions, cron, app, tracking_system
+
+from talon import actions, app, cron, tracking_system
 from talon.track import tobii
+
 from .poller import Poller
 
 
@@ -28,7 +30,7 @@ class EyeTrackerPoller(Poller):
             self.content.publish_event("status_icons", "eye_tracker", "remove")
 
     def eye_tracker_check(self):
-        if self.latest_frame and self.latest_frame.ts > time.perf_counter() - 0.1:
+        if self.latest_frame and self.latest_frame.ts > time.perf_counter() - 0.5:
             status_icon = self.content.create_status_icon(
                 "eye_tracker",
                 "eyemouse",
