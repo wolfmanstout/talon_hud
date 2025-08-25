@@ -18,6 +18,21 @@ class EyeTrackerPoller(Poller):
             # !!! Using unstable private API that may break at any time !!!
             tracking_system.register("gaze", self._on_gaze)
             self.job = cron.interval("200ms", self.eye_tracker_check)
+            self.active = None
+            self.active_icon = self.content.create_status_icon(
+                "eye_tracker",
+                "eyemouse",
+                None,
+                "Eye Tracker Active",
+                lambda _, _2: None,
+            )
+            self.inactive_icon = self.content.create_status_icon(
+                "eye_tracker",
+                "no-camera",
+                None,
+                "Eye Tracker Inactive",
+                lambda _, _2: None,
+            )
 
     def disable(self):
         if self.enabled:
@@ -30,25 +45,15 @@ class EyeTrackerPoller(Poller):
             self.content.publish_event("status_icons", "eye_tracker", "remove")
 
     def eye_tracker_check(self):
-        if self.latest_frame and self.latest_frame.ts > time.perf_counter() - 0.5:
-            status_icon = self.content.create_status_icon(
-                "eye_tracker",
-                "eyemouse",
-                None,
-                "Eye Tracker Active",
-                lambda _, _2: None,
-            )
-        else:
-            status_icon = self.content.create_status_icon(
-                "eye_tracker",
-                "no-camera",
-                None,
-                "Eye Tracker Inactive",
-                lambda _, _2: None,
-            )
-        self.content.publish_event(
-            "status_icons", status_icon.topic, "replace", status_icon
+        active = bool(
+            self.latest_frame and self.latest_frame.ts > time.perf_counter() - 0.5
         )
+        if self.active is None or active != self.active:
+            self.active = active
+            status_icon = self.active_icon if active else self.inactive_icon
+            self.content.publish_event(
+                "status_icons", status_icon.topic, "replace", status_icon
+            )
 
     def _on_gaze(self, frame: tobii.GazeFrame):
         if not frame or not frame.gaze:
