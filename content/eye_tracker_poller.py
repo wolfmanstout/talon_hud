@@ -1,3 +1,4 @@
+import logging
 import time
 
 from talon import actions, app, cron, tracking_system
@@ -49,6 +50,7 @@ class EyeTrackerPoller(Poller):
             self.latest_frame and self.latest_frame.ts > time.perf_counter() - 0.5
         )
         if self.active is None or active != self.active:
+            logging.debug(f"Eye tracker active: {active}")
             self.active = active
             status_icon = self.active_icon if active else self.inactive_icon
             self.content.publish_event(
