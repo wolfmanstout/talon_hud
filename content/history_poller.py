@@ -28,8 +28,13 @@ class HistoryPoller(Poller):
                 word_list = j["phrase"]
                 command = " ".join(word.split("\\")[0] for word in word_list)
 
+        # If no command but speech was recognized, show as rejected
         if command is None:
-            return
+            emit_text = j.get("_metadata", {}).get("emit", "")
+            if emit_text:
+                command = f"REJECTED ({emit_text})"
+            else:
+                return
 
         self.content.add_log("command", command)
         
