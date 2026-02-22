@@ -1,3 +1,5 @@
+import logging
+
 from talon import actions, cron, scope, speech_system, ui, app
 from .poller import Poller
 import time
@@ -32,6 +34,7 @@ class HistoryPoller(Poller):
         if command is None:
             emit_text = j.get("_metadata", {}).get("emit", "")
             if emit_text:
+                logging.debug(f"Rejected command: {emit_text}")
                 command = f"REJECTED ({emit_text})"
             else:
                 return
