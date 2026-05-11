@@ -32,6 +32,9 @@ class HistoryPoller(Poller):
 
         # If no command but speech was recognized, show as rejected
         if command is None:
+            # Skip rejections while Talon is asleep; they are not shown in the UI either.
+            if "sleep" in scope.get("mode"):
+                return
             emit_text = j.get("_metadata", {}).get("emit", "")
             if emit_text:
                 logging.debug(f"Rejected command: {emit_text}")
