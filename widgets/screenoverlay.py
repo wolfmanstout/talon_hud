@@ -48,7 +48,6 @@ class HeadUpScreenOverlay(BaseWidget):
     mouse_poller = None
     prev_mouse_pos = None
     smooth_mode = True
-    canvas_visibility = True
 
     preferences = HeadUpDisplayUserWidgetPreferences(type="screen_overlay", x=0, y=0, width=300, height=30, font_size=12, enabled=True, alignment="center", expand_direction="down", sleep_enabled=False)
     
@@ -270,9 +269,7 @@ class HeadUpScreenOverlay(BaseWidget):
                 canvas_reference["callback"] = lambda canvas, self=self, region=region: self.draw_region(canvas, region)
                 canvas_reference["region"] = region
                 canvas_reference["canvas"].register("draw", canvas_reference["callback"])
-                if not self.canvas_visibility:
-                    canvas_reference["canvas"].hide()
-                canvas_reference["canvas"].freeze()
+                self.set_canvas_visibility(canvas_reference["canvas"], self.visible, True)
                 self.canvases.append(canvas_reference)
 
     def clear_canvases(self):
@@ -357,7 +354,7 @@ class HeadUpScreenOverlay(BaseWidget):
         if self.active_regions != active_regions:
             self.active_regions = active_regions
             for canvas_reference in self.canvases:
-                if self.canvas_visibility:
+                if self.visible:
                     canvas_reference["canvas"].freeze()
             
     def draw_region(self, canvas, region, setup_region = False) -> bool:
@@ -627,16 +624,7 @@ class HeadUpScreenOverlay(BaseWidget):
             self.focus_canvas.freeze()
             self.focus_canvas.hide()
 
-    def set_visibility(self, visible = True):
-        visible = bool(visible)
-        if self.visible == visible:
-            return
-
-        self.visible = visible
-        self.canvas_visibility = visible
-        if self.enabled:
-            self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
-            if self.focused:
-                self.set_canvas_visibility(self.focus_canvas, visible, True)
-            for canvas_reference in self.canvases:
-                self.set_canvas_visibility(canvas_reference["canvas"], visible, True)
+    def apply_canvas_visibility(self, visible):
+        super().apply_canvas_visibility(visible)
+        for canvas_reference in self.canvases:
+            self.set_canvas_visibility(canvas_reference["canvas"], visible, True)

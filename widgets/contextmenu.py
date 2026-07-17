@@ -75,11 +75,7 @@ class HeadUpContextMenu(LayoutWidget):
             self.canvas = self.generate_canvas(min(self.x, self.limit_x), min(self.y, self.limit_y), max(self.width, self.limit_width), max(self.height, self.limit_height))
             self.canvas.register("draw", self.draw_cycle)
             self.animation_tick = self.animation_max_duration if self.show_animations else 0
-            if self.visible:
-                self.refresh_drawing()
-            else:
-                self.set_canvas_visibility(self.canvas, False, True)
-                self.set_canvas_visibility(self.mouse_capture_canvas, False, True)
+            self.apply_initial_canvas_visibility(False, self.canvas, self.mouse_capture_canvas)
             if persisted:
                 self.preferences.enabled = True
                 self.preferences.mark_changed = True

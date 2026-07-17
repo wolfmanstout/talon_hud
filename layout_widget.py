@@ -44,11 +44,7 @@ class LayoutWidget(BaseWidget):
         self.canvas = self.generate_canvas(min(self.x, self.limit_x), min(self.y, self.limit_y), max(self.width, self.limit_width), max(self.height, self.limit_height))
         self.canvas.register("draw", self.draw_cycle)
         self.animation_tick = self.animation_max_duration if self.show_animations else 0
-        if self.visible:
-            self.refresh_drawing(self.show_animations)
-        else:
-            self.set_canvas_visibility(self.canvas, False, True)
-            self.set_canvas_visibility(self.mouse_capture_canvas, False, True)
+        self.apply_initial_canvas_visibility(self.show_animations, self.canvas, self.mouse_capture_canvas)
             
     def disable(self, persisted=False):
         if self.enabled:
@@ -253,12 +249,6 @@ class LayoutWidget(BaseWidget):
         blue_hex = "0" + format(blue, "x") if blue <= 15 else format(blue, "x")
         return red_hex + green_hex + blue_hex
         
-    def set_visibility(self, visible = True):
-        visible = bool(visible)
-        if self.visible == visible:
-            return
-
-        self.visible = visible
-        if self.enabled:
-            self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
-            self.set_canvas_visibility(self.mouse_capture_canvas, visible, True)
+    def apply_canvas_visibility(self, visible):
+        super().apply_canvas_visibility(visible)
+        self.set_canvas_visibility(self.mouse_capture_canvas, visible, True)

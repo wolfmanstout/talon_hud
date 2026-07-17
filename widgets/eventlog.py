@@ -387,10 +387,3 @@ class HeadUpEventLog(BaseWidget):
             text_y = y
             text_height = max(text_height, text.height)
             canvas.draw_text(text.text, x + text.x, text_y )
-
-    def set_visibility(self, visible = True):
-        super().set_visibility(visible)
-
-        # Keep track of the visibility status here to make sure new event logs
-        # And currently animating event logs do not resume the canvas
-        self.visible = visible

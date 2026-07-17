@@ -182,12 +182,8 @@ class BaseWidget(metaclass=ABCMeta):
                     self.focus_canvas.hide()
             self.canvas.register("draw", self.draw_cycle)
             self.animation_tick = self.animation_max_duration if self.show_animations else 0
-            if self.visible:
-                self.refresh_drawing(True)
-            else:
-                self.set_canvas_visibility(self.canvas, False, True)
-                self.set_canvas_visibility(self.focus_canvas, False, True)
-            
+            self.apply_initial_canvas_visibility(True, self.canvas, self.focus_canvas)
+
             if persisted:
                 self.preferences.enabled = True
                 self.preferences.mark_changed = True
@@ -579,10 +575,8 @@ class BaseWidget(metaclass=ABCMeta):
             self.current_focus = self.accessible_tree.find(path)
             self.focused = True
             
-            if not self.mouse_enabled:
-                if self.focus_canvas:
-                    self.focus_canvas.freeze()
-                    self.focus_canvas.show()
+            if not self.mouse_enabled and self.visible:
+                self.set_canvas_visibility(self.focus_canvas, True, True)
             self.refresh_drawing()
         
         return self.current_focus
@@ -635,8 +629,7 @@ class BaseWidget(metaclass=ABCMeta):
         self.focused = False
         if self.enabled and self.canvas:
             self.current_focus = None
-            if self.focus_canvas:
-                self.focus_canvas.hide()                
+            self.set_canvas_visibility(self.focus_canvas, False, True)
             self.refresh_drawing()
 
     def set_visibility(self, visible = True):
@@ -646,9 +639,31 @@ class BaseWidget(metaclass=ABCMeta):
 
         self.visible = visible
         if self.enabled:
-            self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
-            if self.focused:
-                self.set_canvas_visibility(self.focus_canvas, visible, True)
+            if not visible:
+                # Stop any running animation before hiding so the canvas
+                # cannot be left resumed and rendering while hidden
+                self.animating = False
+                self.stop_drawing = True
+                self.animation_tick = 0
+                cron.cancel(self.inactivity_job)
+                self.inactivity_job = None
+            self.apply_canvas_visibility(visible)
+
+    def apply_canvas_visibility(self, visible):
+        """Show or hide the canvases of this widget - Overridden by widgets with extra canvases"""
+        self.set_canvas_visibility(self.canvas, visible, True)
+        if self.focused:
+            self.set_canvas_visibility(self.focus_canvas, visible, True)
+
+    def apply_initial_canvas_visibility(self, animated = False, *canvas_references):
+        """Draw newly created canvases, or keep them frozen and hidden when the widget is invisible"""
+        if self.visible:
+            self.refresh_drawing(animated)
+        else:
+            # Skip the appearance animation so the frozen frame holds the final content
+            self.animation_tick = 0
+            for canvas_reference in canvas_references:
+                self.set_canvas_visibility(canvas_reference, False, True)
 
     def set_canvas_visibility(self, canvas_reference, visible, freeze = True):
         """Show or hide a canvas without leaving an idle canvas rendering."""

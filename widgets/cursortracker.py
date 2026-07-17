@@ -17,7 +17,6 @@ class HeadUpCursorTracker(BaseWidget):
     mouse_poller = None
     prev_mouse_pos = None
     smooth_mode = True
-    canvas_visibility = True
 
     preferences = HeadUpDisplayUserWidgetPreferences(type="cursor_tracker", x=15, y=15, width=15, height=15, enabled=True, sleep_enabled=False)
     
@@ -63,15 +62,16 @@ class HeadUpCursorTracker(BaseWidget):
                 self.x = pos[0] + self.limit_x
                 self.y = pos[1] + self.limit_y
                 self.canvas.move(self.x, self.y)
-                self.canvas.freeze()
-            
+                if self.visible:
+                    self.canvas.freeze()
+
     def soft_disable(self):
         if self.soft_enabled:
             self.soft_enabled = False
             cron.cancel(self.mouse_poller)
             self.prev_mouse_pos = None
             self.mouse_poller = None
-            if self.canvas:
+            if self.canvas and self.visible:
                 self.canvas.freeze()
 
     def update_icons(self):
@@ -104,7 +104,7 @@ class HeadUpCursorTracker(BaseWidget):
                     
                     self.canvas.move(self.x, self.y)
                     self.determine_active_icon(pos)
-                    if self.canvas_visibility:
+                    if self.visible:
                         self.canvas.freeze()
     
     # Determine the active icon based on the region the icon is in
@@ -193,7 +193,3 @@ class HeadUpCursorTracker(BaseWidget):
             pass
         elif (self.setup_type in ["dimension", "limit", "font_size"] ):
             super().setup_move(pos)
-
-    def set_visibility(self, visible = True):
-        super().set_visibility(visible)
-        self.canvas_visibility = visible
