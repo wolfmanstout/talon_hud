@@ -636,6 +636,7 @@ class HeadUpScreenOverlay(BaseWidget):
         self.canvas_visibility = visible
         if self.enabled:
             self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
-            self.set_canvas_visibility(self.focus_canvas, visible and self.focused, True)
+            if self.focused:
+                self.set_canvas_visibility(self.focus_canvas, visible, True)
             for canvas_reference in self.canvases:
                 self.set_canvas_visibility(canvas_reference["canvas"], visible, True)

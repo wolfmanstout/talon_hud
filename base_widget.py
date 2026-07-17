@@ -647,17 +647,20 @@ class BaseWidget(metaclass=ABCMeta):
         self.visible = visible
         if self.enabled:
             self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
-            self.set_canvas_visibility(self.focus_canvas, visible and self.focused, True)
+            if self.focused:
+                self.set_canvas_visibility(self.focus_canvas, visible, True)
 
     def set_canvas_visibility(self, canvas_reference, visible, freeze = True):
         """Show or hide a canvas without leaving an idle canvas rendering."""
         if canvas_reference:
             if visible:
                 canvas_reference.show()
+                if freeze:
+                    canvas_reference.freeze()
             else:
+                # Freeze before hiding so an unfrozen frame cannot make a hidden
+                # canvas visible again. This is especially important for the
+                # widget-name focus canvases.
+                if freeze:
+                    canvas_reference.freeze()
                 canvas_reference.hide()
-
-            # Canvas.show() resumes presentation even when the canvas was frozen.
-            # Re-freeze canvases that are not intentionally animating.
-            if freeze:
-                canvas_reference.freeze()
