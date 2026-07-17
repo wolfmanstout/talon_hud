@@ -111,13 +111,12 @@ class HeadUpScreenOverlay(BaseWidget):
             self.focus_canvas.blocks_mouse = True
             self.focus_canvas.register("draw", self.draw_focus_name)
             self.focus_canvas.freeze()
-            if not self.focused:
+            if not self.focused or not self.visible:
                 self.focus_canvas.hide()
             
             self.cleared = False
             self.soft_enable()
             self.create_canvases()
-            self.set_visibility(True)            
     
     def disable(self, persisted=False):
         if self.enabled:
@@ -629,15 +628,14 @@ class HeadUpScreenOverlay(BaseWidget):
             self.focus_canvas.hide()
 
     def set_visibility(self, visible = True):
+        visible = bool(visible)
+        if self.visible == visible:
+            return
+
+        self.visible = visible
+        self.canvas_visibility = visible
         if self.enabled:
-            self.canvas_visibility = visible
-            if visible:
-                if self.canvas:
-                    self.canvas.show()
-                for canvas_reference in self.canvases:
-                    canvas_reference["canvas"].show()
-            else:
-                if self.canvas:
-                    self.canvas.hide()
-                for canvas_reference in self.canvases:
-                    canvas_reference["canvas"].hide()
+            self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
+            self.set_canvas_visibility(self.focus_canvas, visible and self.focused, True)
+            for canvas_reference in self.canvases:
+                self.set_canvas_visibility(canvas_reference["canvas"], visible, True)

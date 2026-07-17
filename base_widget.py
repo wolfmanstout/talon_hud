@@ -47,10 +47,12 @@ class BaseWidget(metaclass=ABCMeta):
     inactivity_job = None
     stop_drawing = True
     animating = False
+    visible = True
     
     def __init__(self, id, preferences_dict, theme, event_dispatch, subscriptions = None, current_topics = None):
         self.id = id
         self.theme = theme
+        self.visible = True
         self.preferences = copy.copy(self.preferences)
         self.event_dispatch = event_dispatch
 
@@ -180,7 +182,11 @@ class BaseWidget(metaclass=ABCMeta):
                     self.focus_canvas.hide()
             self.canvas.register("draw", self.draw_cycle)
             self.animation_tick = self.animation_max_duration if self.show_animations else 0
-            self.refresh_drawing(True)
+            if self.visible:
+                self.refresh_drawing(True)
+            else:
+                self.set_canvas_visibility(self.canvas, False, True)
+                self.set_canvas_visibility(self.focus_canvas, False, True)
             
             if persisted:
                 self.preferences.enabled = True
@@ -224,6 +230,15 @@ class BaseWidget(metaclass=ABCMeta):
             self.event_dispatch.request_persist_preferences()
 
     def refresh_drawing(self, animated = False):
+        if self.canvas and not self.visible:
+            self.animating = False
+            self.stop_drawing = True
+            cron.cancel(self.inactivity_job)
+            self.inactivity_job = None
+            if not self.enabled:
+                self.clear()
+            return
+
         if self.canvas and self.stop_drawing:
             self.stop_drawing = False
             if not self.animating:
@@ -625,9 +640,24 @@ class BaseWidget(metaclass=ABCMeta):
             self.refresh_drawing()
 
     def set_visibility(self, visible = True):
+        visible = bool(visible)
+        if self.visible == visible:
+            return
+
+        self.visible = visible
         if self.enabled:
-            if self.canvas:
-                if visible:
-                    self.canvas.show()
-                else:
-                    self.canvas.hide()
+            self.set_canvas_visibility(self.canvas, visible, self.stop_drawing)
+            self.set_canvas_visibility(self.focus_canvas, visible and self.focused, True)
+
+    def set_canvas_visibility(self, canvas_reference, visible, freeze = True):
+        """Show or hide a canvas without leaving an idle canvas rendering."""
+        if canvas_reference:
+            if visible:
+                canvas_reference.show()
+            else:
+                canvas_reference.hide()
+
+            # Canvas.show() resumes presentation even when the canvas was frozen.
+            # Re-freeze canvases that are not intentionally animating.
+            if freeze:
+                canvas_reference.freeze()

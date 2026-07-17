@@ -47,7 +47,6 @@ class HeadUpCursorTracker(BaseWidget):
                 self.prev_mouse_pos = ctrl.mouse_pos()
                 self.determine_active_icon(self.prev_mouse_pos)            
                 self.soft_enable()
-                self.set_visibility(True)
     
     def disable(self, persist=False):
         if self.enabled:

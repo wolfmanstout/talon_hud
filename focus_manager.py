@@ -52,9 +52,12 @@ class HeadUpFocusManager:
         self.widget = None
         self.widget_manager = None
         self.last_focused_app = None
-        self.focus_canvas = canvas.Canvas(-2, -2, 1, 1)
-        self.focus_canvas.unregister("focus", self.on_hud_focus_change)
-        self.focus_canvas.unregister("key", self.handle_key_controls)
+        if self.focus_canvas:
+            self.focus_canvas.freeze()
+            self.focus_canvas.unregister("focus", self.on_hud_focus_change)
+            self.focus_canvas.unregister("key", self.handle_key_controls)
+            self.focus_canvas.close()
+            self.focus_canvas = None
     
     def init_widgets(self):
         self.accessible_root.clear()
