@@ -566,8 +566,9 @@ class BaseWidget(metaclass=ABCMeta):
             
             if not self.mouse_enabled:
                 if self.focus_canvas:
-                    self.focus_canvas.freeze()
+                    # Freeze after show - Showing a canvas resumes its continuous draw loop
                     self.focus_canvas.show()
+                    self.focus_canvas.freeze()
             self.refresh_drawing()
         
         return self.current_focus
@@ -624,10 +625,29 @@ class BaseWidget(metaclass=ABCMeta):
                 self.focus_canvas.hide()                
             self.refresh_drawing()
 
+    # Showing a canvas resumes its continuous draw loop, which would otherwise
+    # keep rendering every frame indefinitely - Freeze it again unless an
+    # animation is in flight, in which case the inactivity job freezes it later
+    def refreeze_after_show(self, shown_canvas):
+        if shown_canvas and not self.animating:
+            shown_canvas.freeze()
+
+    def set_focus_canvas_visibility(self, visible):
+        """Show or hide the focused widget label without leaving it rendering."""
+        if self.focused and self.focus_canvas:
+            if visible:
+                self.focus_canvas.show()
+                self.focus_canvas.freeze()
+            else:
+                self.focus_canvas.freeze()
+                self.focus_canvas.hide()
+
     def set_visibility(self, visible = True):
         if self.enabled:
             if self.canvas:
                 if visible:
                     self.canvas.show()
+                    self.refreeze_after_show(self.canvas)
                 else:
                     self.canvas.hide()
+            self.set_focus_canvas_visibility(visible)

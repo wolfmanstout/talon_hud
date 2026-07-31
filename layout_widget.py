@@ -252,8 +252,11 @@ class LayoutWidget(BaseWidget):
             if visible:
                 if self.canvas:
                     self.canvas.show()
+                    self.refreeze_after_show(self.canvas)
                 if self.mouse_capture_canvas:
                     self.mouse_capture_canvas.show()
+                    # The mouse capture canvas never animates - always refreeze
+                    self.mouse_capture_canvas.freeze()
             else:
                 if self.canvas:
                     self.canvas.hide()
