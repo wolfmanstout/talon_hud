@@ -124,8 +124,9 @@ class HeadUpFocusManager:
             if self.focused_widget_item and self.focused_widget_item.role != "widget":
                 message += " " + string_to_speakable_string(self.focused_widget_item.name)
             
-            self.focus_canvas.freeze()
+            # Freeze after show - Showing a canvas resumes its continuous draw loop
             self.focus_canvas.show()
+            self.focus_canvas.freeze()
             self.set_last_focused_app(ui.active_app())
             self.focused = True
             self.focus_canvas.focused = True
