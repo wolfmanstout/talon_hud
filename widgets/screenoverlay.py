@@ -634,10 +634,13 @@ class HeadUpScreenOverlay(BaseWidget):
             if visible:
                 if self.canvas:
                     self.canvas.show()
+                    self.refreeze_after_show(self.canvas)
                 for canvas_reference in self.canvases:
                     canvas_reference["canvas"].show()
+                    self.refreeze_after_show(canvas_reference["canvas"])
             else:
                 if self.canvas:
                     self.canvas.hide()
                 for canvas_reference in self.canvases:
                     canvas_reference["canvas"].hide()
+            self.set_focus_canvas_visibility(visible)
