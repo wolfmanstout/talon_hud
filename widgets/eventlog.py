@@ -345,15 +345,7 @@ class HeadUpEventLog(BaseWidget):
                 paint.color = text_colour + opacity_hex
                 
                 line_height = total_text_height / line_count#paint.textsize# total_text_height / len(lines)b
-                self.draw_rich_text(
-                    canvas,
-                    paint,
-                    lines,
-                    text_x,
-                    current_y + vertical_text_padding * 2,
-                    line_height,
-                    opacity_hex,
-                )
+                self.draw_rich_text(canvas, paint, lines, text_x, current_y + vertical_text_padding * 2, line_height )
                 
             return continue_drawing and self.visible
         else:
@@ -371,14 +363,8 @@ class HeadUpEventLog(BaseWidget):
         rrect = skia.RoundRect.from_rect(rect, x=radius, y=radius)
         canvas.draw_rrect(rrect)
         
-    def draw_rich_text(self, canvas, paint, rich_text, x, y, line_height, opacity_hex):
+    def draw_rich_text(self, canvas, paint, rich_text, x, y, line_height):
         text_colour = paint.color
-        style_colours = (
-            ("warning", self.theme.get_colour("warning_colour", "F75B00")),
-            ("success", self.theme.get_colour("success_colour", "00CC00")),
-            ("error", self.theme.get_colour("error_colour", "AA0000")),
-            ("notice", self.theme.get_colour("info_colour", "30AD9E")),
-        )
         count_tokens = len(rich_text)
     
         current_line = -1
@@ -391,11 +377,6 @@ class HeadUpEventLog(BaseWidget):
         for index, text in enumerate(rich_text):
             paint.font.embolden = "bold" in text.styles
             paint.font.skew_x = -0.33 if "italic" in text.styles else 0
-            paint.color = text_colour
-            for style, colour in style_colours:
-                if style in text.styles:
-                    paint.color = colour[:6] + opacity_hex
-                    break
             
             current_line = current_line + 1 if text.x == 0 else current_line
             if text.x == 0 and index != 0:

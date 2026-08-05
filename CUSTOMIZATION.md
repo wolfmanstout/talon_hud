@@ -274,9 +274,9 @@ There are five types of log message stylings:
 - error: Red background
 - success: Green background
 
-The message can contain the rich text markers explained in the [Creating text content](#creating-text-content) section, including colours.
+The message can contain bold and italic markers like explained in the [Creating text content](#creating-text-content) section, but no colours.
 
-Rejected speech is shown by default. Set `user.talon_hud_show_rejected_commands = false` to hide it.
+Rejected speech is shown as a warning by default. Set `user.talon_hud_show_rejected_commands = false` to hide it.
 
 ## Status icons
 

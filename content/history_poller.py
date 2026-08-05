@@ -10,7 +10,7 @@ mod.setting(
     "talon_hud_show_rejected_commands",
     type=bool,
     default=True,
-    desc="Show rejected speech in the HUD command history.",
+    desc="Show rejected speech in the HUD event log.",
 )
 
 # Handles state of phrases
@@ -29,6 +29,7 @@ class HistoryPoller(Poller):
         speech_system.unregister("phrase", self.on_phrase)
             
     def on_phrase(self, j):
+        log_type = "command"
         try:
             command = actions.user.history_transform_phrase_text(j.get("text"))
         except:
@@ -49,11 +50,12 @@ class HistoryPoller(Poller):
             emit_text = j.get("_metadata", {}).get("emit", "")
             if emit_text:
                 logging.debug(f"Rejected command: {emit_text}")
-                command = f"<!!REJECTED ({emit_text})/>"
+                command = f"REJECTED ({emit_text})"
+                log_type = "warning"
             else:
                 return
 
-        self.content.add_log("command", command)
+        self.content.add_log(log_type, command)
         
         # Debugging data
         time_ms = 0.0
