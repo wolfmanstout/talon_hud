@@ -1,8 +1,17 @@
 import logging
-
-from talon import actions, cron, scope, speech_system, ui, app
-from .poller import Poller
 import time
+
+from talon import Module, actions, app, scope, settings, speech_system
+
+from .poller import Poller
+
+mod = Module()
+mod.setting(
+    "talon_hud_show_rejected_commands",
+    type=bool,
+    default=True,
+    desc="Show rejected speech in the HUD command history.",
+)
 
 # Handles state of phrases
 # Inspired by the command history from knausj
@@ -32,13 +41,15 @@ class HistoryPoller(Poller):
 
         # If no command but speech was recognized, show as rejected
         if command is None:
+            if not settings.get("user.talon_hud_show_rejected_commands"):
+                return
             # Skip rejections while Talon is asleep; they are not shown in the UI either.
             if "sleep" in scope.get("mode"):
                 return
             emit_text = j.get("_metadata", {}).get("emit", "")
             if emit_text:
                 logging.debug(f"Rejected command: {emit_text}")
-                command = f"REJECTED ({emit_text})"
+                command = f"<!!REJECTED ({emit_text})/>"
             else:
                 return
 
