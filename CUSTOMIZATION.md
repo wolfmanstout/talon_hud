@@ -276,6 +276,8 @@ There are five types of log message stylings:
 
 The message can contain bold and italic markers like explained in the [Creating text content](#creating-text-content) section, but no colours.
 
+Rejected speech is shown as a warning by default. Set `user.talon_hud_show_rejected_commands = false` to hide it.
+
 ## Status icons
 
 There are two kinds of icons that you can publish to the HUD, namely status icons and ability icons, which get published to the status bar and ability bar respectively. Status icons can have click interactions, while ability icons are purely for a visual reminder.  
