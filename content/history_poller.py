@@ -50,7 +50,7 @@ class HistoryPoller(Poller):
             emit_text = j.get("_metadata", {}).get("emit", "")
             if emit_text:
                 logging.debug(f"Rejected command: {emit_text}")
-                command = f"REJECTED ({emit_text})"
+                command = f"- {emit_text}"
                 log_type = "warning"
             else:
                 return
